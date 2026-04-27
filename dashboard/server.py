@@ -25,7 +25,7 @@ from auth import init as auth_init, requires_auth, extract_token, verify_token, 
 scripts_dir = str(pathlib.Path(__file__).parent.parent / 'scripts')
 sys.path.insert(0, scripts_dir)
 from file_lock import atomic_json_read, atomic_json_write, atomic_json_update
-from utils import validate_url, read_json, now_iso
+from utils import validate_url, read_json, now_iso, python_bin
 from court_discuss import (
     create_session as cd_create, advance_discussion as cd_advance,
     get_session as cd_get, conclude_session as cd_conclude,
@@ -154,7 +154,7 @@ def _trigger_refresh():
 
     def _refresh():
         try:
-            subprocess.run(['python3', str(script)], timeout=30)
+            subprocess.run([python_bin(), str(script)], timeout=30)
         except Exception as e:
             log.warning(f'refresh_live_data.py 触发失败: {e}')
     threading.Thread(target=_refresh, daemon=True).start()
@@ -342,7 +342,7 @@ def add_skill_to_agent(agent_id, skill_name, description, trigger=''):
     skill_md.write_text(template)
     # Re-sync agent config
     try:
-        subprocess.run(['python3', str(SCRIPTS / 'sync_agent_config.py')], timeout=10)
+        subprocess.run([python_bin(), str(SCRIPTS / 'sync_agent_config.py')], timeout=10)
     except Exception:
         pass
     return {'ok': True, 'message': f'技能 {skill_name} 已添加到 {agent_id}', 'path': str(skill_md)}
@@ -456,7 +456,7 @@ def add_remote_skill(agent_id, skill_name, source_url, description=''):
     
     # Re-sync agent config
     try:
-        subprocess.run(['python3', str(SCRIPTS / 'sync_agent_config.py')], timeout=10)
+        subprocess.run([python_bin(), str(SCRIPTS / 'sync_agent_config.py')], timeout=10)
     except Exception:
         pass
     
@@ -574,7 +574,7 @@ def remove_remote_skill(agent_id, skill_name):
         
         # Re-sync agent config
         try:
-            subprocess.run(['python3', str(SCRIPTS / 'sync_agent_config.py')], timeout=10)
+            subprocess.run([python_bin(), str(SCRIPTS / 'sync_agent_config.py')], timeout=10)
         except Exception:
             pass
         
@@ -2659,7 +2659,7 @@ class Handler(BaseHTTPRequestHandler):
             force = body.get('force', True)  # 从看板手动触发默认强制
             def do_refresh():
                 try:
-                    cmd = ['python3', str(SCRIPTS / 'fetch_morning_news.py')]
+                    cmd = [python_bin(), str(SCRIPTS / 'fetch_morning_news.py')]
                     if force:
                         cmd.append('--force')
                     subprocess.run(cmd, timeout=120)
@@ -2826,8 +2826,8 @@ class Handler(BaseHTTPRequestHandler):
             # Async apply
             def apply_async():
                 try:
-                    subprocess.run(['python3', str(SCRIPTS / 'apply_model_changes.py')], timeout=30)
-                    subprocess.run(['python3', str(SCRIPTS / 'sync_agent_config.py')], timeout=10)
+                    subprocess.run([python_bin(), str(SCRIPTS / 'apply_model_changes.py')], timeout=30)
+                    subprocess.run([python_bin(), str(SCRIPTS / 'sync_agent_config.py')], timeout=10)
                 except Exception as e:
                     print(f'[apply error] {e}', file=sys.stderr)
 

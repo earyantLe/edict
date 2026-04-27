@@ -31,6 +31,7 @@
 """
 import datetime
 import json, pathlib, sys, subprocess, logging, os, re
+from utils import python_bin
 
 _BASE = pathlib.Path(os.environ['EDICT_HOME']) if 'EDICT_HOME' in os.environ else pathlib.Path(__file__).resolve().parent.parent
 TASKS_FILE = _BASE / 'data' / 'tasks_source.json'
@@ -123,7 +124,7 @@ def _trigger_refresh():
     # 注意：这个 fallback 只在非 watcher 部署场景触发
     if not (_BASE / 'data' / '.refresh_watcher_pid').exists():
         try:
-            subprocess.Popen(['python3', str(REFRESH_SCRIPT)],
+            subprocess.Popen([python_bin(), str(REFRESH_SCRIPT)],
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception:
             pass
